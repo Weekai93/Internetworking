@@ -43,8 +43,9 @@ public class SLPMsg extends Msg {
 		SLPMsg pdu = null;
 		// Subtask 2.2: Test for registration response token and call RegMsg.parse()
 		this.dataBytes = sentence.getBytes();
+		//throw IllegalMsg exception if the parsed message does not start with "slp" --> parsing fails
 		if (!sentence.startsWith(SLP_HEADER)) {
-			System.out.println("Illegal message: " + sentence);
+			System.out.println("Illegal data header: " + sentence);
 			throw new IllegalMsgException();
 		}
 		String[] parts = sentence.split("\\s+", 2);
@@ -58,7 +59,7 @@ public class SLPMsg extends Msg {
 			pdu = this;
 		}
 		// Subtask 3.2: If first token is not a reg header try to parse as a SLP data message
-		return pdu;
+		return this;
 	}
 
 

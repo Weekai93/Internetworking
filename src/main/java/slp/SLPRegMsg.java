@@ -44,6 +44,7 @@ public class SLPRegMsg extends SLPMsg {
 		// Subtask 2.2: Test for registration response token and call SLPRegResponse.parse()
 		SLPRegMsg pdu = null;
 		this.dataBytes = sentence.getBytes();
+		//throw IllegalMsg exception if the parsed message does not start with "reg" --> parsing fails
 		if (!sentence.startsWith(SLP_REG_HEADER)) {
 			System.out.println("Illegal data header: " + sentence);
 			throw new IllegalMsgException();
@@ -51,6 +52,7 @@ public class SLPRegMsg extends SLPMsg {
 
 		String[] parts = sentence.split("\\s+", 2);
 
+		// If the second token start with "ACK" or "NAK", call the SLPRegResponseMsg parser
 		if(parts[1].startsWith(SLPRegResponseMsg.SLP_REG_SUCCESS) || parts[1].startsWith(SLPRegResponseMsg.SLP_REG_FAILED )) {
 			pdu = new SLPRegResponseMsg();
 			pdu.parse(parts[1]);

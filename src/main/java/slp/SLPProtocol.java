@@ -78,20 +78,20 @@ public class SLPProtocol extends Protocol {
 		} catch (IWProtocolException e) {
 			throw new RegistrationFailedException();
 		}
-		try {
-			//throw RegistrationFailedException if response code equals "NAK"
-			if (regMsg.getData().equals("NAK")) {
-				throw new RegistrationFailedException();
-			}
-			//set isRegistered flag to true and return if response code equals "ACK"
-			if (regMsg.getData().equals("ACK")) {
-				this.isRegistered = true;
-				return;
 
-			}
-		} catch (IWProtocolException e) {
-			throw new IllegalMsgException();
+		//throw RegistrationFailedException if response code equals "NAK"
+		if (regMsg.getData().equals("NAK")) {
+			System.out.println("Registration failed");
+			throw new RegistrationFailedException();
 		}
+		//set isRegistered flag to true and return if response code equals "ACK"
+		if (regMsg.getData().equals("ACK")) {
+			this.isRegistered = true;
+			return;
+
+		}
+		throw new IllegalMsgException();
+
 	}
 	
 	// Create SLPDataMsg object (subtask 3.3) and send

@@ -5,6 +5,7 @@ package slp;
 import core.Msg;
 import exceptions.IWProtocolException;
 import exceptions.IllegalMsgException;
+import exceptions.RegistrationFailedException;
 
 /* 
  * Simple link protocol registration response message fields:
@@ -36,14 +37,11 @@ public class SLPRegResponseMsg extends SLPRegMsg {
 		SLPRegResponseMsg pdu = null;
 		this.dataBytes = sentence.getBytes();
 
-		if(sentence.startsWith(SLP_REG_SUCCESS)) {
+		if(sentence.startsWith(SLP_REG_SUCCESS) || sentence.startsWith(SLP_REG_FAILED)) {
 			this.data = sentence;
 			return this;
 		}
-		if(sentence.startsWith(SLP_REG_FAILED)) {
-			System.out.println("Illegal data header: " + sentence);
-			throw new IllegalMsgException();
-		}
+		System.out.println("Illegal data header: " + sentence);
 		throw new IllegalMsgException();
 
 
