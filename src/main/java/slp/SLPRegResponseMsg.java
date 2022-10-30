@@ -40,8 +40,12 @@ public class SLPRegResponseMsg extends SLPRegMsg {
 			this.data = sentence;
 			return this;
 		}
-
-		System.out.println("Illegal data header: " + sentence);
+		if(sentence.startsWith(SLP_REG_FAILED)) {
+			System.out.println("Illegal data header: " + sentence);
+			throw new IllegalMsgException();
+		}
 		throw new IllegalMsgException();
+
+
 	}
 }

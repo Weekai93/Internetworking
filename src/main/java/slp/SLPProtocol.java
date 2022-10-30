@@ -64,8 +64,10 @@ public class SLPProtocol extends Protocol {
 
 		//create Msg object to store the received message object
 		Msg response;
+		//try to receive message within the timeout
 		try	{
 			response = phy.receive(SLPTIMEOUT);
+			//throw RegistrationFailed exception if no response is received within the timeout
 		} catch (SocketTimeoutException e) {
 			throw new RegistrationFailedException();
 		}
@@ -88,7 +90,7 @@ public class SLPProtocol extends Protocol {
 
 			}
 		} catch (IWProtocolException e) {
-			throw new RegistrationFailedException();
+			throw new IllegalMsgException();
 		}
 	}
 	
