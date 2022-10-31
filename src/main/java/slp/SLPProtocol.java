@@ -81,7 +81,7 @@ public class SLPProtocol extends Protocol {
 
 		//throw RegistrationFailedException if response code equals "NAK"
 		if (regMsg.getData().equals("NAK")) {
-			System.out.println("Registration failed");
+			System.out.println("Registration failed: " + regMsg.getData());
 			throw new RegistrationFailedException();
 		}
 		//set isRegistered flag to true and return if response code equals "ACK"

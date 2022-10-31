@@ -37,7 +37,7 @@ public class SLPRegResponseMsg extends SLPRegMsg {
 		SLPRegResponseMsg pdu = null;
 		this.dataBytes = sentence.getBytes();
 
-		if(sentence.startsWith(SLP_REG_SUCCESS) || sentence.startsWith(SLP_REG_FAILED)) {
+		if(sentence.equals(SLP_REG_SUCCESS) || sentence.equals(SLP_REG_FAILED)) {
 			this.data = sentence;
 			return this;
 		}
