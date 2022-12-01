@@ -98,6 +98,16 @@ public class SLPProtocol extends Protocol {
 	// Subtask 3.1
 	@Override
 	public void send(String s, Configuration config) throws IOException, IWProtocolException {
+		if (!isRegistered) {
+			System.out.println("Client is not registred");
+			return;
+		}
+		else {
+			int destAddr = ((SLPConfiguration)config).getRemoteID();
+			SLPDataMsg slpDataMsg = new SLPDataMsg (destAddr, this.myID);
+			slpDataMsg.create(s);
+			phy.send(new String(slpDataMsg.getDataBytes()),this.phyConfig);
+			}
 		
 	}
 
@@ -105,8 +115,28 @@ public class SLPProtocol extends Protocol {
 	// Subtask 3.2
 	@Override
 	public Msg receive() throws IOException, IWProtocolException {
-		SLPMsg in = null;
+		Msg in = null;
+		SLPMsg slpMsg = new SLPMsg();
 
+		in = phy.receive();
+		try {
+			slpMsg.parse(in.getData());
+		}
+		catch (Exception e) {
+			in = null;
+			slpMsg = null;         // = discard message?
+			return this.receive();
+		}
+		if(slpMsg.parse(in.getData()) instanceof SLPRegMsg) {
+			if (!isRegistered){
+				return slpMsg;
+			}else {
+				in = null;
+				slpMsg = null;
+				return this.receive();
+			}
+		}
+		// if message was parsed correctly object is returned to caller
 		return in;
 	}
 

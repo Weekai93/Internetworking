@@ -52,8 +52,8 @@ public class SLPMsg extends Msg {
 		// If the second token start with "reg", call the SLPRegMsg parser
 		if(parts[1].startsWith(SLPRegMsg.SLP_REG_HEADER)) {
 			pdu = new SLPRegMsg();
-			pdu.parse(parts[1]);
-			this.data = pdu.getData();
+			return pdu.parse(parts[1]);
+			//this.data = pdu.getData();
 		} else {
 			this.data = parts[1];
 			pdu = this;
