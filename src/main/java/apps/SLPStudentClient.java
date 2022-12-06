@@ -45,7 +45,7 @@ public class SLPStudentClient implements Runnable {
 			return;
 		}
 		
-/* Remove comment for exercise 3 -->
+//Remove comment for exercise 3 -->
 		// Start the receiver side of the app
 		SLPStudentClient recv = new SLPStudentClient(slp);
 		Thread recvT = new Thread(recv);
@@ -74,7 +74,7 @@ public class SLPStudentClient implements Runnable {
 				e.printStackTrace();
 			}
 		}
-<-- end uncomment for exercise 3 */
+//<-- end uncomment for exercise 3 */
 		
 	}
 
@@ -82,7 +82,7 @@ public class SLPStudentClient implements Runnable {
 	// Receiver thread
 	@Override
 	public void run() {
-/* Remove comment for exercise 3 -->
+// Remove comment for exercise 3 -->
 		boolean eof = false;
 		
 		while (!eof) {
@@ -96,7 +96,7 @@ public class SLPStudentClient implements Runnable {
 				e.printStackTrace();
 			}
 		}
-<-- end uncomment for exercise 3 */
+//<-- end uncomment for exercise 3
 	
 	}
 }

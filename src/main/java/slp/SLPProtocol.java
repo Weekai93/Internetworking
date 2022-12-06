@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import core.Configuration;
 import core.Msg;
@@ -98,15 +99,16 @@ public class SLPProtocol extends Protocol {
 	// Subtask 3.1
 	@Override
 	public void send(String s, Configuration config) throws IOException, IWProtocolException {
-		if (!isRegistered) {
-			System.out.println("Client is not registred");
-			return;
-		}
-		else {
-			int destAddr = ((SLPConfiguration)config).getRemoteID();
-			SLPDataMsg slpDataMsg = new SLPDataMsg (destAddr, this.myID);
+		//if client is registered take the message that was created using SLPDataMsg.create and
+		//send it using the phy config
+		if (isRegistered) {
+			int destAddress = ((SLPConfiguration)config).getRemoteID();
+			SLPDataMsg slpDataMsg = new SLPDataMsg (destAddress, this.myID);
 			slpDataMsg.create(s);
 			phy.send(new String(slpDataMsg.getDataBytes()),this.phyConfig);
+		}
+		else {
+			throw new RegistrationFailedException();
 			}
 		
 	}
@@ -115,37 +117,78 @@ public class SLPProtocol extends Protocol {
 	// Subtask 3.2
 	@Override
 	public Msg receive() throws IOException, IWProtocolException {
+
 		Msg in = null;
 		SLPMsg slpMsg = new SLPMsg();
 
-		in = phy.receive();
+		//try to receive and parse the message
 		try {
-			slpMsg.parse(in.getData());
+			in = phy.receive();
+			slpMsg = (SLPMsg)slpMsg.parse((in.getData()));
 		}
-		catch (Exception e) {
-			in = null;
-			slpMsg = null;         // = discard message?
+		// discard message and receive again
+		catch (IWProtocolException e) {
+			slpMsg = null;
 			return this.receive();
 		}
-		if(slpMsg.parse(in.getData()) instanceof SLPRegMsg) {
-			if (!isRegistered){
+
+		//check what kind of message SLPMsg.parse was returned
+		if(slpMsg.getClass() == SLPRegMsg.class) {
+			if (!this.isRegistered){
 				return slpMsg;
-			}else {
-				in = null;
+			}
+			//Check if we run as switch
+			if(this.isSwitch) {
+				this.registration();
+			}
+			else {
+				//discard any incoming SLPRegMsg if already registered
 				slpMsg = null;
 				return this.receive();
 			}
 		}
+
+		//Check if we successfully registered
+		if (!this.isRegistered){
+			throw new RegistrationFailedException();
+		}
+
+		SLPDataMsg slpDataMsg = (SLPDataMsg) slpMsg;
+		//discard message if the destination is not the own SLP ID and receive next message
+		if (this.myID != slpDataMsg.getDest()) {
+			slpDataMsg = null;
+			slpMsg = null;
+			return this.receive();
+		}
 		// if message was parsed correctly object is returned to caller
-		return in;
+		return slpMsg;
 	}
 
-	public void storeAndForward() throws IOException {
+	public void storeAndForward() throws IOException, IWProtocolException {
 		while (true) {
 			forward();
 		}
 	}
 
-	public void forward() throws IOException {
+	public void forward() throws IOException, IWProtocolException {
+
+		Msg receivedMsg = null;
+		//listen for message
+		receivedMsg = receive();
+
+		if(receivedMsg.getClass() == SLPRegMsg.class) {
+			this.registration();
+
+		}
+		if(receivedMsg.getClass() == SLPDataMsg.class) {
+			SLPDataMsg slpDataMsg = (SLPDataMsg) receivedMsg;
+			PhyConfiguration phyConfiguration = systems.get(((SLPDataMsg) receivedMsg).getDest());
+			phy.send(receivedMsg.getData(), phyConfiguration);
+
+			}
+
+
+
 	}
+	public void registration(){}
 }

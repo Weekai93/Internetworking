@@ -55,15 +55,17 @@ public class SLPRegMsg extends SLPMsg {
 		// If the second token start with "ACK" or "NAK", call the SLPRegResponseMsg parser
 		if(parts[1].startsWith(SLPRegResponseMsg.SLP_REG_SUCCESS) || parts[1].startsWith(SLPRegResponseMsg.SLP_REG_FAILED )) {
 			pdu = new SLPRegResponseMsg();
-			return pdu.parse(parts[1]);
-			//this.data = pdu.getData();
+			pdu.parse(parts[1]);
+			this.data = pdu.getData();
+			return pdu;
 
+			// Subtask 4.2b: Parse registration messages
+			//parse incoming reg messages and store the id
 		} else {
-			this.data = parts[1];
+			this.create(parts[1]);
+			this.slpid = Integer.parseInt(parts[1]);
 			pdu = this;
 		}
-		// Subtask 4.2b: Parse registration messages
-		
 		return this;
 	}
 }
