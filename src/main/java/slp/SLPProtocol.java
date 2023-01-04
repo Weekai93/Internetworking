@@ -51,50 +51,64 @@ public class SLPProtocol extends Protocol {
 	}
 	
 	// Register an end systems 
-	public void register(InetAddress rname, int rp) throws IWProtocolException, IOException {		
-		// Create registration message object 
-		SLPRegMsg reg = new SLPRegMsg();
-		// Fill registration message fields
-		reg.create(Integer.toString(this.myID));
+	public void register(InetAddress rname, int rp) throws IWProtocolException, IOException {
 		// Create configuration object
 		this.phyConfig = new PhyConfiguration(rname, rp);
+		boolean success = false;
+		int attempts = 0;
+		while (attempts < 3) {
+			// Create registration message object
+			SLPRegMsg reg = new SLPRegMsg();
+			// Fill registration message fields
+			reg.create(Integer.toString(this.myID));
 
-		phy.send(new String (reg.getDataBytes()), this.phyConfig);
-		
-		// Subtask 2: Receive response message, parse it, and inform app
+			phy.send(new String (reg.getDataBytes()), this.phyConfig);
 
-		//create Msg object to store the received message object
-		Msg response;
-		//try to receive message within the timeout
-		try	{
-			response = phy.receive(SLPTIMEOUT);
-			//throw RegistrationFailed exception if no response is received within the timeout
-		} catch (SocketTimeoutException e) {
+			// Subtask 2: Receive response message, parse it, and inform app
+
+			//create Msg object to store the received message object
+			Msg response;
+			//try to receive message within the timeout
+			try	{
+				response = phy.receive(SLPTIMEOUT);
+				// If a timeout occurs, resend the registration message
+			} catch (SocketTimeoutException e) {
+				attempts++;
+				//throw new RegistrationFailedException();
+				continue;
+			}
+			//create SLPMsg into which the response data is parsed
+			SLPMsg regMsg = new SLPMsg();
+			try {
+				regMsg.parse(response.getData());
+			} catch (IWProtocolException e) {
+				// If the received message is corrupted, resend the registration message
+				attempts++;
+				//throw new RegistrationFailedException();
+				continue;
+			}
+
+			// If the response code equals "NAK", throw a RegistrationFailedException
+			if (regMsg.getData().equals("NAK")) {
+				System.out.println("Registration failed: " + regMsg.getData());
+				//throw new RegistrationFailedException();
+			}
+			// If the response code equals "ACK", set the isRegistered flag to true and return
+			if (regMsg.getData().equals("ACK")) {
+				this.isRegistered = true;
+				return;
+			}
+			// If the response code is invalid, throw an IllegalMsgException
+			throw new IllegalMsgException();
+		}
+		// If the third registration attempt fails, throw a RegistrationFailedException
+		if (attempts == 3) {
 			throw new RegistrationFailedException();
 		}
-		//create SLPMsg into which the response data is parsed
-		SLPMsg regMsg = new SLPMsg();
-		try {
-			regMsg.parse(response.getData());
-		} catch (IWProtocolException e) {
-			throw new RegistrationFailedException();
-		}
-
-		//throw RegistrationFailedException if response code equals "NAK"
-		if (regMsg.getData().equals("NAK")) {
-			System.out.println("Registration failed: " + regMsg.getData());
-			throw new RegistrationFailedException();
-		}
-		//set isRegistered flag to true and return if response code equals "ACK"
-		if (regMsg.getData().equals("ACK")) {
-			this.isRegistered = true;
-			return;
-
-		}
-		throw new IllegalMsgException();
-
 	}
-	
+
+
+
 	// Create SLPDataMsg object (subtask 3.3) and send
 	// Subtask 3.1
 	@Override
