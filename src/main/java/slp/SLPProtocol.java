@@ -54,7 +54,7 @@ public class SLPProtocol extends Protocol {
 	public void register(InetAddress rname, int rp) throws IWProtocolException, IOException {
 		// Create configuration object
 		this.phyConfig = new PhyConfiguration(rname, rp);
-		boolean success = false;
+
 		int attempts = 0;
 		while (attempts < 3) {
 			// Create registration message object
