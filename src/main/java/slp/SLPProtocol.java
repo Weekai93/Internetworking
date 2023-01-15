@@ -43,10 +43,10 @@ public class SLPProtocol extends Protocol {
 	/*
 	 * Enable/disable the use of timeout when reading from socket
 	 */
-	private void enableTimeout() {
+	public void enableTimeout() {
 		this.useTimeout = true;
 	}
-	private void disableTimeout() {
+	public void disableTimeout() {
 		this.useTimeout = false;
 	}
 	
@@ -137,7 +137,12 @@ public class SLPProtocol extends Protocol {
 
 		//try to receive and parse the message
 		try {
-			in = phy.receive();
+			//enhance the SLP protocol to use a timeout
+			if (this.useTimeout) {
+				in = this.phy.receive(SLPTIMEOUT);
+			} else {
+				in = this.phy.receive();
+			}
 			slpMsg = (SLPMsg)slpMsg.parse((in.getData()));
 		}
 		// discard message and receive again
